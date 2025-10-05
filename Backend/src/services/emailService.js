@@ -26,7 +26,7 @@ export class EmailService {
     try {
       const mailOptions = {
         from: `"Fundación Favorita" <${process.env.EMAIL_USER}>`,
-        to: 'contabilidad@fundacionfavorita.com', // Correo de destino
+        to: 'yeshuachiliquinga@gmail.com', // Correo de destino
         subject: `Aprobado Pago para ONG: ${reporteData.USUARIO_NOMBREONG}`,
         html: `
           <h3>Notificación de Aprobación de Pago</h3>

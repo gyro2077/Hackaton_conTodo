@@ -2,18 +2,35 @@
 import { ReporteService as ReporteServiceClass } from '../services/reporteServices.js';
 import { EmailService as EmailServiceClass } from '../services/emailService.js'; // <- AÑADIR
 import { PaymentService as PaymentServiceClass } from '../services/paymentService.js'; // <- AÑADIR
+import { AnalysisService as AnalysisServiceClass } from '../services/analysisService.js';
 
 const reporteService = new ReporteServiceClass();
 const emailService = new EmailServiceClass(); // <- AÑADIR
 const paymentService = new PaymentServiceClass(); // <- AÑADIR
+const analysisService = new AnalysisServiceClass(); // <-- AÑADE ESTA LÍNEA
+
+
 
 export class ReporteController {
   async crear(req, res) {
     try {
-      const nuevo = await reporteService.createReporte(req.body);
-      // If multiple created (mensual), return array; otherwise single object
-      res.status(201).json(nuevo);
-    } catch (error) { res.status(400).json({ message: error.message }); }
+      // 1. Crea el reporte en la base de datos (esto no cambia)
+      const nuevoReporte = await reporteService.createReporte(req.body);
+
+      // 2. Llama al servicio de Gemini con los datos del reporte recién creado
+      const analisisGemini = await analysisService.analizarCoherenciaYResumir(nuevoReporte);
+
+      // 3. Combina el reporte creado con el análisis en una sola respuesta
+      const respuestaCombinada = {
+        reporteCreado: nuevoReporte,
+        analisisIA: analisisGemini
+      };
+
+      res.status(201).json(respuestaCombinada);
+      
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
   }
 
   async listar(req, res) {
@@ -76,9 +93,5 @@ export class ReporteController {
       console.error('Error al aprobar reporte:', error);
     }
   }
-  // === AÑADIR ESTE NUEVO MÉTODO ===
-  async aprobar(reporteId, usuarioId) {
-    // La lógica de la base de datos se delega al repositorio
-    return this.repository.aprobar(reporteId, usuarioId);
-  }
+
 }
