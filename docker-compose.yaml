@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Base de Datos
+  postgres:
+    image: postgres:15
+    container_name: db_favorita
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Motor de Automatización
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n_favorita
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+
+volumes:
+  postgres_data:
+  n8n_data:
