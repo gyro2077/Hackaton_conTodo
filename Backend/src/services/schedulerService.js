@@ -10,7 +10,7 @@ export class SchedulerService {
   startReportReminders() {
     console.log('Scheduler de recordatorios iniciado.');
 
-    // Se ejecuta cada 20 segundos (ideal para pruebas del hackathon)
+    // Se ejecuta cada 20 segundos
     cron.schedule('*/20 * * * * *', async () => {
       console.log('Ejecutando tarea programada: enviando recordatorios...');
       
@@ -20,7 +20,9 @@ export class SchedulerService {
 
         console.log(`Se encontraron ${ongs.length} ONGs para notificar.`);
 
+        // Enviamos un correo a cada una (sin validar el formato del email)
         for (const ong of ongs) {
+          // La validación 'if (ong.usuario_user.includes('@'))' ha sido removida.
           await emailService.enviarRecordatorioReporte(ong);
         }
 
