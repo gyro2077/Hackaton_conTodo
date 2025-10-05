@@ -198,9 +198,54 @@ NOTE: routes under `/plantilla` are protected and require an `admin` role. Use `
 - Validation: The controller enforces a submission window based on the report's `REPORTEPROYECTO_PERIODOSUBIRREPORTES` (example: `mensual` allows days 1-9). You can also use explicit ranges like `1-9`.
 - Response: created respuesta row
 
-### GET /respuesta/reporte/:reporteId
-- Purpose: List responses for a report (auth required)
+## /reporte
 
+### POST /reporte/crear
+- Purpose: Submit a report for an ONG. The response will include an on-the-fly analysis by Gemini AI.
+- Auth: authenticated ONG user (token required)
+- Request JSON:
+  {
+    "USUARIO_ID": 1,
+    "REPORTEPROYECTO_NOMBRE": "Reporte de Impacto...",
+    // ... all other report fields
+  }
+- Response JSON (201):
+  {
+    "reporteCreado": { ... },
+    "analisisIA": {
+      "evaluacionCoherencia": "...",
+      "resumenEjecutivo": "..."
+    }
+  }
+
+### POST /reporte/:id/analizar
+- Purpose: (Admin-only) Triggers a Gemini AI analysis on an existing report. Useful for re-evaluation or for reports created before the AI feature.
+- Auth: admin (Authorization: Bearer <token>)
+- URL Params: `id`=[the REPORTEPROYECTO_ID of the report to analyze]
+- Response JSON (200):
+  {
+    "reporteAnalizado": { ... },
+    "analisisIA": {
+      "evaluacionCoherencia": "...",
+      "resumenEjecutivo": "..."
+    }
+  }
+
+### POST /reporte/:id/approve
+- Purpose: (Admin-only) Approve a report for payment. Triggers payment and email notifications.
+- Auth: admin (Authorization: Bearer <token>)
+- URL Params: `id`=[the REPORTEPROYECTO_ID of the report to approve]
+- Response JSON (200):
+  {
+    "message": "Reporte aprobado con éxito...",
+    "reporte": { ... }
+  }
+
+### GET /reporte/
+- List reports
+
+### GET /reporte/id/:id
+- Get report details
 
 Notes, caveats and next steps
 ----------------------------

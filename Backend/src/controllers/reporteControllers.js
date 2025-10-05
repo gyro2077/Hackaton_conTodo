@@ -14,15 +14,19 @@ const analysisService = new AnalysisServiceClass(); // <-- AÑADE ESTA LÍNEA
 export class ReporteController {
   async crear(req, res) {
     try {
-      // 1. Crea el reporte en la base de datos (esto no cambia)
+      // 1. Crea el reporte o los reportes en la base de datos
       const nuevoReporte = await reporteService.createReporte(req.body);
 
-      // 2. Llama al servicio de Gemini con los datos del reporte recién creado
-      const analisisGemini = await analysisService.analizarCoherenciaYResumir(nuevoReporte);
+      // ✔️ SOLUCIÓN: Verificamos si la respuesta es un array o un objeto
+      // y seleccionamos el objeto correcto para analizar.
+      const reporteParaAnalizar = Array.isArray(nuevoReporte) ? nuevoReporte[0] : nuevoReporte;
 
-      // 3. Combina el reporte creado con el análisis en una sola respuesta
+      // 2. Llama al servicio de Gemini con el reporte correcto
+      const analisisGemini = await analysisService.analizarCoherenciaYResumir(reporteParaAnalizar);
+
+      // 3. Combina el resultado con el análisis en una sola respuesta
       const respuestaCombinada = {
-        reporteCreado: nuevoReporte,
+        reporteCreado: nuevoReporte, // Devolvemos el original (sea array u objeto)
         analisisIA: analisisGemini
       };
 
@@ -32,6 +36,8 @@ export class ReporteController {
       res.status(400).json({ message: error.message });
     }
   }
+
+  
 
   async listar(req, res) {
     try { res.status(200).json(await reporteService.listarTodos()); }
@@ -91,6 +97,38 @@ export class ReporteController {
 
     } catch (error) {
       console.error('Error al aprobar reporte:', error);
+    }
+  }
+  // === AÑADIR ESTE NUEVO MÉTODO PARA LA ADMINISTRADORA ===
+  async analizarReporteExistente(req, res) {
+    try {
+      const reporteId = req.params.id;
+      const usuario = req.user;
+
+      // 1. Verificamos que sea un administrador
+      if (usuario.role !== 'admin') {
+        return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
+      }
+
+      // 2. Buscamos el reporte en la base de datos
+      const reporteArray = await reporteService.buscarPorId(reporteId);
+      if (!reporteArray || reporteArray.length === 0) {
+        return res.status(404).json({ message: 'Reporte no encontrado' });
+      }
+      const reporte = reporteArray[0]; // Extraemos el objeto del array
+
+      // 3. Lo mandamos a analizar a Gemini
+      const analisisGemini = await analysisService.analizarCoherenciaYResumir(reporte);
+
+      // 4. Devolvemos el análisis
+      res.status(200).json({
+        reporteAnalizado: reporte,
+        analisisIA: analisisGemini
+      });
+
+    } catch (error) {
+      console.error('Error al analizar reporte existente:', error);
+      res.status(500).json({ message: 'Error interno al procesar el análisis.' });
     }
   }
 

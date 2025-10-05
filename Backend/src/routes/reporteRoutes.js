@@ -19,5 +19,8 @@ router.delete('/eliminar/:id', verifyToken, (req, res) => controller.eliminar(re
 // ✔️ CORRECCIÓN 2: Usamos el nombre correcto 'verifyToken'.
 // ✔️ CORRECCIÓN 3: Usamos la instancia correcta del controlador que definiste: 'controller', no 'reporteController'.
 router.post('/:id/approve', verifyToken, (req, res) => controller.aprobarReporte(req, res));
+// === AÑADIR ESTA NUEVA RUTA PARA EL ANÁLISIS DEL ADMIN ===
+router.post('/:id/analizar', verifyToken, (req, res) => controller.analizarReporteExistente(req, res));
+
 
 export default router;
