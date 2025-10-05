@@ -1,18 +1,30 @@
+// src/repositories/usuarioRepository.js
 import pool from '../config/db.js';
 
 export class UsuarioRepository {
   async create(usuario) {
-    const { rows: rowsMax } = await pool.query(`SELECT COALESCE(MAX(USUARIO_ID), 0) + 1 AS nextId FROM USUARIO`);
-    const nextId = rowsMax[0].nextid;
-
+    // ELIMINAMOS CUALQUIER CÁLCULO MANUAL DEL ID.
+    // La base de datos se encargará del ID automáticamente.
     const query = `
-      INSERT INTO USUARIO (USUARIO_ID, USUARIO_NOMBREONG, USUARIO_USER, USUARIO_CONTRASENA, USUARIO_ROLE, USUARI_DESCRIPCION)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO usuario (usuario_nombreong, usuario_user, usuario_contrasena, usuario_role, usuario_descripcion)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    const values = [nextId, usuario.USUARIO_NOMBREONG, usuario.USUARIO_USER, usuario.USUARIO_CONTRASENA, usuario.USUARIO_ROLE || 'ong', usuario.USUARI_DESCRIPCION];
-    const { rows } = await pool.query(query, values);
-    return rows[0];
+    const values = [
+      usuario.USUARIO_NOMBREONG,
+      usuario.USUARIO_USER,
+      usuario.USUARIO_CONTRASENA, // La contraseña ya debe venir "hasheada" desde el servicio
+      usuario.USUARIO_ROLE || 'ong',
+      usuario.USUARIO_DESCRIPCION
+    ];
+
+    try {
+      const { rows } = await pool.query(query, values);
+      return rows[0];
+    } catch (error) {
+      console.error('Error en UsuarioRepository al crear:', error);
+      throw error;
+    }
   }
 
   async listarTodos() {
@@ -39,11 +51,11 @@ export class UsuarioRepository {
     const campos = [];
     const values = [];
     let i = 1;
-  if (usuario.USUARIO_NOMBREONG) { campos.push(`USUARIO_NOMBREONG = $${i}`); values.push(usuario.USUARIO_NOMBREONG); i++; }
+    if (usuario.USUARIO_NOMBREONG) { campos.push(`USUARIO_NOMBREONG = $${i}`); values.push(usuario.USUARIO_NOMBREONG); i++; }
     if (usuario.USUARIO_USER) { campos.push(`USUARIO_USER = $${i}`); values.push(usuario.USUARIO_USER); i++; }
     if (usuario.USUARIO_CONTRASENA) { campos.push(`USUARIO_CONTRASENA = $${i}`); values.push(usuario.USUARIO_CONTRASENA); i++; }
-  if (usuario.USUARIO_ROLE) { campos.push(`USUARIO_ROLE = $${i}`); values.push(usuario.USUARIO_ROLE); i++; }
-    if (usuario.USUARI_DESCRIPCION) { campos.push(`USUARI_DESCRIPCION = $${i}`); values.push(usuario.USUARI_DESCRIPCION); i++; }
+    if (usuario.USUARIO_ROLE) { campos.push(`USUARIO_ROLE = $${i}`); values.push(usuario.USUARIO_ROLE); i++; }
+    if (usuario.USUARIO_DESCRIPCION) { campos.push(`USUARIO_DESCRIPCION = $${i}`); values.push(usuario.USUARIO_DESCRIPCION); i++; }
 
     if (campos.length === 0) return false;
     values.push(usuario.USUARIO_ID);

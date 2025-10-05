@@ -171,15 +171,14 @@ REPORTEPROYECTO_ID ASC
 /*==============================================================*/
 /* Table: USUARIO                                               */
 /*==============================================================*/
-create table USUARIO 
-(
-   USUARIO_ID           integer                        not null,
-   USUARIO_NOMBREONG    varchar(124)                   not null,
-   USUARIO_USER         varchar(124)                   not null,
-   USUARIO_CONTRASENA   varchar(124)                   not null,
-   USUARIO_ROLE         varchar(32)                    not null default 'ong',
-   USUARI_DESCRIPCION   varchar(124)                   not null,
-   constraint PK_USUARIO primary key (USUARIO_ID)
+-- create_usuario_postgres.sql (Corregido)
+CREATE TABLE IF NOT EXISTS usuario (
+  usuario_id SERIAL PRIMARY KEY,
+  usuario_nombreong VARCHAR(124) NOT NULL,
+  usuario_user VARCHAR(124) NOT NULL UNIQUE,
+  usuario_contrasena VARCHAR(256) NOT NULL,
+  usuario_role VARCHAR(32) NOT NULL DEFAULT 'ong',
+  usuario_descripcion VARCHAR(124) NOT NULL -- Corregido
 );
 
 /*==============================================================*/
@@ -380,3 +379,6 @@ alter table REPORTE_INDICADORES
       on delete restrict;
 
 
+ALTER TABLE REPORTEPROYECTO
+ADD COLUMN REPORTEPROYECTO_FECHAAPROBACION TIMESTAMP WITH TIME ZONE,
+ADD COLUMN REPORTEPROYECTO_APROBADOPOR INTEGER REFERENCES USUARIO(USUARIO_ID);

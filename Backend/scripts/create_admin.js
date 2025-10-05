@@ -11,7 +11,7 @@ async function run() {
       USUARIO_USER: 'admin',
       USUARIO_CONTRASENA: 'Admin@12345',
       USUARIO_ROLE: 'admin',
-      USUARI_DESCRIPCION: 'Cuenta administrador quemada'    
+      USUARIO_DESCRIPCION: 'Cuenta administrador quemada'    
     });
     console.log('Admin creado:', admin);
   } catch (err) {

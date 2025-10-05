@@ -1,4 +1,4 @@
-// services/emailService.js
+// src/services/emailService.js
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
@@ -20,7 +20,7 @@ export class EmailService {
 
   /**
    * Envía un correo de notificación cuando un reporte es aprobado.
-   * @param {object} reporteData - Datos del reporte aprobado, ej: { ONG_NOMBRE, REPORTE_NOMBRE, MONTO }
+   * ¡¡ESTE MÉTODO ESENCIAL NO SE TOCA!!
    */
   async enviarCorreoAprobacion(reporteData) {
     try {
@@ -45,7 +45,33 @@ export class EmailService {
       console.log('Correo de aprobación enviado:', info.messageId);
     } catch (error) {
       console.error('Error al enviar el correo de aprobación:', error);
-      // Aquí podrías agregar lógica para reintentar o notificar a un admin del error
+    }
+  }
+
+  // === AÑADIR ESTE NUEVO MÉTODO SIN BORRAR EL ANTERIOR ===
+  /**
+   * Envía un correo de recordatorio a una ONG.
+   */
+  async enviarRecordatorioReporte(usuario) {
+    try {
+      const mailOptions = {
+        from: `"Fundación Favorita" <${process.env.EMAIL_USER}>`,
+        to: usuario.usuario_user, // El correo del usuario de la ONG
+        subject: `⏰ Recordatorio: ¡La fecha para subir tu reporte se acerca!`,
+        html: `
+          <h3>Hola ${usuario.usuario_nombreong},</h3>
+          <p>Este es un recordatorio amistoso para que subas tu reporte mensual a la plataforma.</p>
+          <p>La fecha límite es el día 5 de cada mes. ¡Agradecemos mucho tu colaboración!</p>
+          <br>
+          <p>Saludos cordiales,</p>
+          <p>El equipo de Fundación Favorita.</p>
+        `,
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`Recordatorio enviado a ${usuario.usuario_user}: ${info.messageId}`);
+    } catch (error) {
+      console.error(`Error al enviar recordatorio a ${usuario.usuario_user}:`, error);
     }
   }
 }

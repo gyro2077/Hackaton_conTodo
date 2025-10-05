@@ -15,16 +15,5 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-# Motor de Automatización
-  n8n:
-    image: n8nio/n8n
-    container_name: n8n_favorita
-    restart: always
-    ports:
-      - "5678:5678"
-    volumes:
-      - n8n_data:/home/node/.n8n
-
 volumes:
   postgres_data:
-  n8n_data:
