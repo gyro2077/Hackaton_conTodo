@@ -77,6 +77,25 @@ export class ReporteService {
     return row;
   }
 
+  async aprobar(id, usuarioId) {
+    // 1. Llama al repositorio para actualizar la base de datos
+    const reporteActualizado = await reporteRepo.aprobar(id, usuarioId);
+
+    if (!reporteActualizado) {
+      return null; // Si no se actualizó nada, devuelve null
+    }
+
+    // 2. (Opcional pero recomendado) Al igual que en createReporte, 
+    // enriquecemos el objeto con el nombre de la ONG para que el controlador 
+    // tenga toda la información que necesita.
+    const usuarioRows = await usuarioRepo.buscarPorId(reporteActualizado.usuario_id);
+    if (usuarioRows && usuarioRows.length > 0) {
+      reporteActualizado.USUARIO_NOMBREONG = usuarioRows[0].usuario_nombreong;
+    }
+
+    return reporteActualizado;
+  }
+
   async listarTodos() { return await reporteRepo.listarTodos(); }
   async buscarPorId(id) { return await reporteRepo.buscarPorId(id); }
   async eliminar(id) { return await reporteRepo.eliminar(id); }

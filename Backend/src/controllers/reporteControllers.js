@@ -40,11 +40,11 @@ export class ReporteController {
     catch (error) { res.status(400).json({ message: error.message }); }
   }
 
-  // === AÑADIR ESTE NUEVO MÉTODO ===
   async aprobarReporte(req, res) {
     try {
       const reporteId = req.params.id;
-      const usuarioAprobador = req.usuario; // Obtenido del token JWT verificado
+      // ✔️ SOLUCIÓN: Cambiamos req.usuario por req.user para que coincida con el middleware
+      const usuarioAprobador = req.user;
 
       // 1. Validar que el usuario tenga el rol adecuado (ej: 'admin' o 'foundation-admin')
       if (usuarioAprobador.role !== 'admin') {
@@ -52,7 +52,6 @@ export class ReporteController {
       }
 
       // 2. Llama al servicio para actualizar el estado del reporte en la BD
-      // Asumimos que el servicio devuelve el reporte con toda la info necesaria
       const reporteCompleto = await reporteService.aprobar(reporteId, usuarioAprobador.id);
       
       if (!reporteCompleto) {
@@ -66,11 +65,8 @@ export class ReporteController {
       });
 
       // 4. Ejecuta las tareas asíncronas después de haber respondido.
-      // Le pasamos el nombre del aprobador para el correo.
       reporteCompleto.aprobadoPorNombre = usuarioAprobador.nombre;
 
-      // Usamos un 'await' aquí solo para asegurar que ambas se disparen,
-      // pero no bloquean la respuesta al cliente que ya se envió.
       await Promise.all([
           emailService.enviarCorreoAprobacion(reporteCompleto),
           paymentService.iniciarPagoPlux(reporteCompleto)
@@ -78,9 +74,11 @@ export class ReporteController {
 
     } catch (error) {
       console.error('Error al aprobar reporte:', error);
-      // No envíes una respuesta de error aquí si ya enviaste una de éxito
-      // Simplemente registra el error.
     }
   }
-  // === FIN DEL NUEVO MÉTODO ===
+  // === AÑADIR ESTE NUEVO MÉTODO ===
+  async aprobar(reporteId, usuarioId) {
+    // La lógica de la base de datos se delega al repositorio
+    return this.repository.aprobar(reporteId, usuarioId);
+  }
 }

@@ -48,6 +48,22 @@ export class ReporteRepository {
     const { rowCount } = await pool.query(`DELETE FROM REPORTEPROYECTO WHERE REPORTEPROYECTO_ID = $1`, [id]);
     return rowCount > 0;
   }
+  
+  async aprobar(id, usuarioId) {
+    const query = `
+      UPDATE REPORTEPROYECTO
+      SET 
+        REPORTEPROYECTO_ESTADO = 'Aprobado',
+        REPORTEPROYECTO_FECHAAPROBACION = NOW(),
+        REPORTEPROYECTO_APROBADOPOR = $2
+      WHERE REPORTEPROYECTO_ID = $1
+      RETURNING *
+    `;
+    // RETURNING * nos devuelve el reporte actualizado, lo cual es muy útil.
+    const { rows } = await pool.query(query, [id, usuarioId]);
+    return rows[0];
+  }
+
 
   async actualizar(reporte) {
     const campos = [];
